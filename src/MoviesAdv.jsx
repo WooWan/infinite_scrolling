@@ -1,8 +1,9 @@
 import './App.css';
-import {useCallback, useRef, useState} from "react";
+import {useRef, useEffect} from "react";
 import axios from "axios";
 import styled from "styled-components";
 import {useInfiniteQuery} from "react-query";
+import {Link} from "react-router-dom";
 
 const API_KEY= "bf8d080cc142561c5c990b861fee137e"
 
@@ -43,29 +44,27 @@ function MoviesAdv() {
     }
   );
 
-  const [page, setPage] = useState(1);
   const loadMoreRef = useRef(null);
 
-
-  const handleObserver = useCallback((entries) => {
-    const [target] = entries;
-    if (target.isIntersecting) {
-      setPage((prev) => prev + 1);
+  const handleObserver = ([entry]) => {
+    if (entry.isIntersecting) {
+      fetchNextPage();
     }
-  }, []);
+  };
 
-  // useEffect(() => {
-  //   const option = {
-  //     root: null,
-  //     rootMargin: '0px',
-  //     threshold: 1.0,
-  //   };
-  //   const observer = new IntersectionObserver(handleObserver, option);
-  //   if (loadMoreRef.current) observer.observe(loadMoreRef.current)
-  //   return () => {
-  //     if(loadMoreRef.current) observer.unobserve(loadMoreRef.current);
-  //   }
-  // }, [handleObserver])
+
+  useEffect(() => {
+    const option = {
+      root: null,
+      rootMargin: '0px',
+      threshold: 1.0,
+    };
+    const observer = new IntersectionObserver(handleObserver, option);
+    if (loadMoreRef.current) observer.observe(loadMoreRef.current)
+    return () => {
+      if(loadMoreRef.current) observer.unobserve(loadMoreRef.current);
+    }
+  }, [handleObserver])
 
 
   function makeImagePath(id) {
@@ -74,20 +73,24 @@ function MoviesAdv() {
 
   return (
     <>
-      {
-        data?.pages.map((group, index) => (
-          <Row key={index}>
-            {group?.results?.map((movie) =>
-              <Box key={movie.id}>
-                <MoviePoster src={makeImagePath(movie.backdrop_path)} alt=""/>
-                <Info>{movie.original_title}</Info>
-              </Box>
-            )}
-            <button onClick={() => fetchNextPage()}>다음 페이지</button>
-          </Row>
+      <Row>
+        {
+          data?.pages.map((group) => (
+            group?.results?.map((movie) => {
+                return <Link to={parseInt(movie.id)}>
+                  <Box key={movie.id}>
+                    <MoviePoster src={makeImagePath(movie.backdrop_path)} alt=""/>
+                    <Info>{movie.original_title}</Info>
+                  </Box>
+                </Link>
+              }
+            )
+          ))
+        }
+        <div ref={loadMoreRef}/>
+        <button onClick={() => fetchNextPage()}>다음 페이지</button>
+      </Row>
 
-        ))
-      }
     </>
   );
 }
