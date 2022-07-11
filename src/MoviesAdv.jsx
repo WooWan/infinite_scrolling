@@ -40,7 +40,9 @@ function MoviesAdv() {
       return axios.get(`https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}&page=${pageParam}`)
         .then((res) => res.data);
     }, {
-      getNextPageParam: (lastPage) => lastPage?.page + 1,
+      getNextPageParam: (lastPage) => {
+        return lastPage?.page + 1
+      }
     }
   );
 
@@ -52,7 +54,6 @@ function MoviesAdv() {
     }
   };
 
-
   useEffect(() => {
     const option = {
       root: null,
@@ -62,14 +63,18 @@ function MoviesAdv() {
     const observer = new IntersectionObserver(handleObserver, option);
     if (loadMoreRef.current) observer.observe(loadMoreRef.current)
     return () => {
-      if(loadMoreRef.current) observer.unobserve(loadMoreRef.current);
+      if (loadMoreRef.current) observer.unobserve(loadMoreRef.current);
     }
-  }, [handleObserver])
+  });
 
 
   function makeImagePath(id) {
     return `https://image.tmdb.org/t/p/original/${id}`;
   }
+
+  // function setScrollYLocation(scrollY) {
+  //   // localStorage.setItem("scrollY", scrollY);
+  // }
 
   return (
     <>
@@ -77,12 +82,13 @@ function MoviesAdv() {
         {
           data?.pages.map((group) => (
             group?.results?.map((movie) => {
-                return <Link to={parseInt(movie.id)}>
-                  <Box key={movie.id}>
+                return <Box key={movie.id}>
+                  <Link to={movie.id.toString()}>
                     <MoviePoster src={makeImagePath(movie.backdrop_path)} alt=""/>
                     <Info>{movie.original_title}</Info>
-                  </Box>
-                </Link>
+                  </Link>
+                </Box>;
+
               }
             )
           ))
