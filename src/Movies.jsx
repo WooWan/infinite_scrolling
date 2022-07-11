@@ -2,6 +2,7 @@ import './App.css';
 import {useCallback, useEffect, useRef, useState} from "react";
 import axios from "axios";
 import styled from "styled-components";
+import {Link} from "react-router-dom";
 
 const API_KEY= "bf8d080cc142561c5c990b861fee137e"
 
@@ -67,7 +68,6 @@ function Movies() {
     setIsLoading(true)
     const API = `https://api.themoviedb.org/3/movie/popular?api_key=${API_KEY}&page=${page}`
     const response = await axios.get(API)
-    console.log(response)
     setMovies([...movies, ...response.data.results]);
     setIsLoading(false);
   };
@@ -78,8 +78,10 @@ function Movies() {
       <Row>
         {movies.length > 0 && movies.map((movie) => {
             return <Box key={movie.id}>
-              <MoviePoster src={makeImagePath(movie.backdrop_path)} alt=""/>
-              <Info>{movie.original_title}</Info>
+              <Link to={movie.id.toString()}>
+                <MoviePoster src={makeImagePath(movie.backdrop_path)} alt=""/>
+                <Info>{movie.original_title}</Info>
+              </Link>
             </Box>
           }
         )}
